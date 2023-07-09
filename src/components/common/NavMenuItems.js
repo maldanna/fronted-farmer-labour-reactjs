@@ -5,6 +5,7 @@ import Login from "./loginAndlogout/Login";
 
 import Profile from "./user/Profile";
 import Contactus from "./Contactus";
+import Signup from "./loginAndlogout/Signup";
 
 const LoggedInNavMenuItems = [
     { id: "About", title: 'About', path: '/About', element: About},
@@ -26,6 +27,7 @@ const LoggedInNavMenuItems = [
     { id: "Profile", title: 'Profile', path: '/Profile', element: Profile},
     { id: "Contactus", title: 'Contactus', path: '/Contactus', element: Contactus},
     { id: "Login", title: 'Login', path: '/Login', element: Login},
+    { id: "Signup", title: 'Signup', path: '/Signup', element: Signup},
   ]
 
   export {LogoutNavMenuItems,LoggedInNavMenuItems,NavMenuItems};

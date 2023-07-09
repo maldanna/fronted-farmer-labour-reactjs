@@ -1,0 +1,142 @@
+.btn-modal {
+    padding: 10px 20px;
+    display: block;
+    margin: 100px auto 0;
+    font-size: 18px;
+}
+
+.signup-modal {
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    position: fixed;
+}
+
+.signup-overlay {
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    position: fixed;
+    background: rgba(49, 49, 49, 0.8);
+}
+
+.signup-modal-content {
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    line-height: 1.4;
+    background: #f1f1f1;
+    padding: 14px 28px;
+    border-radius: 5px;
+    max-width: 600px;
+    min-width: 350px;
+}
+
+.signup-table {
+    padding: 15px;
+    font-size: 17px;
+    font-family: 'Times New Roman', Times, serif;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.signup-table td {
+    color: rgb(108, 151, 187);
+}
+
+.signup-button {
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    background-color: green;
+    border-radius: 10px;
+    text-align: center;
+    font-size: large;
+}
+
+.cancel-button {
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    background-color: rgb(176, 58, 58);
+    border-radius: 10px;
+    text-align: center;
+    font-size: large;
+}
+
+.signup-form h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.button-group {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+}
+
+
+.signup-button {
+    width: 100%;
+    padding: 10px;
+    background-color: #4caf50;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.signup-button:hover {
+    background-color: #45a049;
+}
+
+.cancel-button {
+    width: 100%;
+    padding: 10px;
+    background-color: #e13b3b;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.cancel-button:hover {
+    background-color: #ea0f16;
+}
+
+.user-profile {
+    width: 50px;
+    /* Adjust the size of the user's photo as needed */
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    align-content: center;
+    margin-left: 40%;
+}
+
+.error-span {
+    color: #ea0f16;
+}
