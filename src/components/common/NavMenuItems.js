@@ -6,13 +6,14 @@ import Login from "./loginAndlogout/Login";
 import Profile from "./user/Profile";
 import Contactus from "./Contactus";
 import Signup from "./loginAndlogout/Signup";
+import WorkPost from "./WorkPost";
 
 const LoggedInNavMenuItems = [
     { id: "About", title: 'About', path: '/About', element: About},
     { id: "Contactus", title: 'Contactus', path: '/Contactus', element: Contactus},
     { id: "Profile", title: 'Profile', path: '/Profile', element: Profile},
-
-    // Add more menu items as needed
+    { id: "WorkPost", title: 'WorkPost', path: '/WorkPost', element: WorkPost}
+    // Add more menu items as neede
   ];
   const LogoutNavMenuItems = [
     { id: "About", title: 'About', path: '/About', element: About},
@@ -28,6 +29,7 @@ const LoggedInNavMenuItems = [
     { id: "Contactus", title: 'Contactus', path: '/Contactus', element: Contactus},
     { id: "Login", title: 'Login', path: '/Login', element: Login},
     { id: "Signup", title: 'Signup', path: '/Signup', element: Signup},
+    { id: "WorkPost", title: 'WorkPost', path: '/WorkPost', element: WorkPost}
   ]
 
   export {LogoutNavMenuItems,LoggedInNavMenuItems,NavMenuItems};

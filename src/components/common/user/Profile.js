@@ -225,7 +225,7 @@ const Profile = () => {
                                                 type="button"
                                                 id="cancel"
                                                 name="cancel"
-                                                className="btn btn-secondary"
+                                                className="btn btn-danger"
                                                 onClick={handleCancel}
                                             >
                                                 Cancel
@@ -234,7 +234,7 @@ const Profile = () => {
                                                 type="submit"
                                                 id="submit"
                                                 name="submit"
-                                                className="btn btn-primary"
+                                                className="btn btn-success"
                                                 onClick={handleSubmit}
                                             >
                                                 Update
