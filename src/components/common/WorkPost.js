@@ -119,7 +119,7 @@ const WorkPost = () => {
         <>
             <div className="work-post-div">
                 <div className="row">
-                    <div className="col-md-8">
+                    <div className="col-xs-12 col-sm-col-md-8 ">
                         <div className="container">
                             <div className="row">
                                 <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2">

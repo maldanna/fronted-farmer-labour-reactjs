@@ -7,6 +7,7 @@ import Profile from "./user/Profile";
 import Contactus from "./Contactus";
 import Signup from "./loginAndlogout/Signup";
 import WorkPost from "./WorkPost";
+import WorkPost2 from "./WorkPost2";
 
 const LoggedInNavMenuItems = [
     { id: "About", title: 'About', path: '/About', element: About},
@@ -29,7 +30,8 @@ const LoggedInNavMenuItems = [
     { id: "Contactus", title: 'Contactus', path: '/Contactus', element: Contactus},
     { id: "Login", title: 'Login', path: '/Login', element: Login},
     { id: "Signup", title: 'Signup', path: '/Signup', element: Signup},
-    { id: "WorkPost", title: 'WorkPost', path: '/WorkPost', element: WorkPost}
+    { id: "WorkPost", title: 'WorkPost', path: '/WorkPost', element: WorkPost},
+    { id: "WorkPost2", title: 'WorkPost2', path: '/WorkPost2', element: WorkPost2}
   ]
 
   export {LogoutNavMenuItems,LoggedInNavMenuItems,NavMenuItems};
