@@ -178,4 +178,7 @@ const WorkPost2 = () => {
   );
 };
 
-export default WorkPost2;
+
+
+
+export default WorkPost2;  
