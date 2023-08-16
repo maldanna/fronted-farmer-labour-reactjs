@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_em_connector_listener">
+  <sn_em_connector_listener action="INSERT_OR_UPDATE">
+    <active>true</active>
+    <description>Push connector for Lightstep webhooks</description>
+    <event_source_label>lightstep</event_source_label>
+    <header_name>user-agent</header_name>
+    <header_value>lightstep</header_value>
+    <mid_server_script_include/>
+    <name>LightStep Push connector</name>
+    <order>100</order>
+    <script><![CDATA[// Lightstep Push Connector
+//
+// This Push Connector receives Lightstep Stream Alerts and Metric alerts and generates SN events from them
+// For more information on the Lightstep webhooks used for Alert notifications see:
+// https://docs.lightstep.com/docs/create-alerts-for-monitored-data
+(function process( /*RESTAPIRequest*/ request, body) {
+    try {
+        var requestBody = JSON.parse(body);
+        var queryParams = request.queryParams;
+        var timeOfEvent = new GlideDateTime();
+        var responseBody = {};
+        responseBody.eventSysIds = [];
+        // Create the new event record
+        var gr = new GlideRecord('em_event');
+        gr.initialize();
+        gr.source = source_label;
+        // In Event Rules - Source - Category to which this matching rule applies. The mapping rule only applies to events with the same event class value. If this value is empty, apply the rule to all events.
+        //Populate event_class with source instance name if present
+        gr.event_class = (typeof event_class !== 'undefined' && event_class) ? event_class : source_label;
+        var additional_info = requestBody;
+        //update additional_info field with all the query_params from the endpoint
+        var endpointParamsUtil = new EndpointParamsUtil();
+        endpointParamsUtil.updateAdditionalInfoWithEndpointParams(request.queryParams, additional_info);
+        //flattened fields has to be seperated and added to additional information.
+        var flattenPayload = new sn_em_connector.FlattenPayload();
+        var flatPayload = flattenPayload.getFlattenPayload(body);
+        for (var key in flatPayload) {
+            additional_info[key] = flatPayload[key];
+        }
+        //STRY55133117 : Populating additional_info field with connector_tags
+        if (typeof connector_tags !== 'undefined' && connector_tags) {
+            new PushConnectorInstanceUtils().updateAdditionalInfoWithConnectorTags(additional_info, connector_tags);
+        }
+        if (requestBody && requestBody.payloads) {
+            // Stream alert
+            var resolutionState = 'New';
+            gr.severity = '1';
+            gr.time_of_event = timeOfEvent;
+            gr.type = 'stream';
+            if (requestBody['saved-search'] && requestBody['saved-search'].text) {
+                gr.stream_name = requestBody['saved-search'].text;
+            }
+            // In new lightstep version grouping-id format: b8767905-5c82-4269-8931-46a36064cf52. In old version grouping-id format : 34ca_5cc9_2021-08-04T19:28:33Z
+            var alert_id = requestBody['grouping-id'];
+            if (alert_id) {
+                if (alert_id.includes('_')) {
+                    alert_id = alert_id.substring(0, alert_id.lastIndexOf('_'));
+                }
+                gr.message_key = alert_id;
+            }
+            if (requestBody.payloads[0]) {
+                var payload = requestBody.payloads[0];
+                // If alert_type is condition-not-violated from first payload, the status is closed.
+                if (payload.type && payload.type.toLowerCase() === 'condition-not-violated') {
+                    gr.severity = '0';
+                    resolutionState = 'Closing';
+                }
+                var alert_name = payload['subtitle'] && payload['subtitle'].text;
+                var expression = payload['ls-info'] && payload['ls-info'].Expression;
+                if (alert_id && alert_name) {
+                    gr.message_key = alert_id + '_' + alert_name;
+                } else if (alert_name) {
+                    gr.message_key = alert_name;
+                }
+                if (alert_name && expression) {
+                    gr.description = alert_name + '-' + expression;
+                } else if (alert_name) {
+                    gr.description = alert_name;
+                } else if (expression) {
+                    gr.description = expression;
+                }
+                if (expression) {
+                    gr.metric_name = expression.split(" ")[0];
+                }
+                if (payload['subtitle'] && payload['subtitle'].href) {
+                    additional_info['lightstepAlertUrl'] = payload['subtitle'].href;
+                }
+            }
+            gr.resolution_state = resolutionState;
+            additional_info['name'] = request.headers['service-name'];
+            gr.additional_info = JSON.stringify(additional_info);
+            var configurations = new sn_em_connector.PushConnectorConfigurations();
+            configurations.applyConfigurations(gr, sys_id, connector_sys_id);
+            // Populate custom domain info
+            new sn_em_connector.PushConnectorUtil().populateDomain(sys_id, request, requestBody, gr);
+            responseBody.eventSysIds.push(gr.insert());
+            response.setBody(responseBody);
+        } else if (requestBody && requestBody['metric-condition']) {
+            // Metric alert
+            var resState = 'New';
+            var severity = '5';
+            if (requestBody.status) {
+                var status = requestBody.status.toLowerCase();
+                if (status === 'critical threshold violated') {
+                    severity = '1';
+                } else if (status === 'warning threshold violated') {
+                    severity = '4';
+                } else if (status === 'no data violation') {
+                    severity = '5';
+                } else if (status === 'resolved') {
+                    severity = '0';
+                    resState = 'Closing';
+                }
+            }
+            gr.severity = severity;
+            gr.resolution_state = resState;
+            gr.time_of_event = timeOfEvent;
+            gr.type = 'metric';
+            var description = requestBody.details.Description;
+            var expression = requestBody.details.Expression;
+            if (description && expression) {
+                gr.description = description + '-' + expression;
+            } else if (description) {
+                gr.description = description;
+            } else if (expression) {
+                gr.description = expression;
+            }
+            if (requestBody['metric-condition'].href) {
+                var alertId = requestBody['metric-condition'].href;
+                alertId = alertId.indexOf("?end") === -1 ? alertId : alertId.substring(0, alertId.indexOf("?end"));
+                gr.message_key = alertId;
+                additional_info['lightstepAlertUrl'] = alertId;
+            }
+            if (requestBody.incident_id) {
+                gr.message_key = requestBody.incident_id;
+            }
+            if (request.headers['service-name']) {
+                additional_info['name'] = request.headers['service-name'];
+            }
+            gr.additional_info = JSON.stringify(additional_info);
+            // Populate custom domain info
+            new sn_em_connector.PushConnectorUtil().populateDomain(sys_id, request, requestBody, gr);
+            responseBody.eventSysIds.push(gr.insert());
+            response.setBody(responseBody);
+        } else if (requestBody && requestBody.records) {
+            var lightstepDomainUrl = "https://app.lightstep.com/";
+            var lightstepAlertsPath = "/monitoring/conditions";
+            if (requestBody.records.length > 0) {
+                var record = requestBody.records[0];
+                gr.source = record.source;
+                gr.message_key = record.message_key;
+                gr.event_class = record.event_class;
+                gr.resource = record.resource;
+                gr.node = record.node;
+                gr.metric_name = record.metric_name;
+                gr.type = record.type;
+                gr.severity = record.severity;
+                gr.resolution_state = record.resolution_state;
+                gr.description = record.description;
+                gr.time_of_event = timeOfEvent;
+                additional_info['name'] = record.resource;
+                var lightstepProject = record.event_class.trim();
+                additional_info['lightstepAlertUrl'] = lightstepDomainUrl + lightstepProject + lightstepAlertsPath;
+                if (record.url) {
+                    additional_info['lightstepAlertUrl'] = record.url;
+                }
+                gr.additional_info = JSON.stringify(additional_info);
+                // Populate custom domain info
+                new sn_em_connector.PushConnectorUtil().populateDomain(sys_id, request, requestBody, gr);
+                responseBody.eventSysIds.push(gr.insert());
+                response.setBody(responseBody);
+            } else {
+                throw new Error("LightStep Push connector script in sn_em_connector_listener: In the payload, an empty 'records' array is not allowed. Please include alert information in the array.");
+            }
+        }
+    } catch (er) {
+        gs.error(er);
+        status = 500;
+        return er;
+    }
+})(request, body);]]></script>
+    <source>lightstep</source>
+    <sys_class_name>sn_em_connector_listener</sys_class_name>
+    <sys_created_by>admin</sys_created_by>
+    <sys_created_on>2021-08-17 04:03:34</sys_created_on>
+    <sys_id>45099f451b42f81083e6c912604bcb01</sys_id>
+    <sys_mod_count>22</sys_mod_count>
+    <sys_name>LightStep Push connector</sys_name>
+    <sys_package display_value="Event Management Connectors" source="sn_em_connector">ac4c9c57dbb1d090561b186c1396191a</sys_package>
+    <sys_policy/>
+    <sys_scope display_value="Event Management Connectors">ac4c9c57dbb1d090561b186c1396191a</sys_scope>
+    <sys_update_name>sn_em_connector_listener_45099f451b42f81083e6c912604bcb01</sys_update_name>
+    <sys_updated_by>admin</sys_updated_by>
+    <sys_updated_on>2023-08-07 11:57:20</sys_updated_on>
+    <type>1</type>
+  </sn_em_connector_listener>
+</record_update>
+ServiceNow
